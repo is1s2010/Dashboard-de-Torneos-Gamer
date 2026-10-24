@@ -80,6 +80,7 @@ function mostrarTorneos(filtro = "") {
             contenidoTarjetas += "<p>Categoria: " + t.categoria + "</p>";
             contenidoTarjetas += "<p>Participantes: " + t.participantes + "</p>";
             contenidoTarjetas += "<p>Recaudación: $" + t.recaudacion.toFixed(2) + "</p>";
+            contenidoTabla += "<td><button onclick='eliminarTorneo(" + i + ")'>ELIMINAR</button></td>";
             contenidoTarjetas += "</div>";
             
         }
@@ -114,6 +115,12 @@ function actualizarEstadisticas() {
     document.getElementById("totalParticipantes").innerText = totalParticipantes;
     document.getElementById("recaudacionTotal").innerText = recaudacionTotal.toFixed(2);
 }
+ function eliminarTorneo (indice){
+    if(confirm("¿Seguro que deseas eliminar este torneo?")){
+        torneos.splice(indice, 1);
+        mostrarTorneos();
+}
+ }
 
 
 
