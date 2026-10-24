@@ -18,6 +18,7 @@ body {
     min-height: 100vh;
 }
 
+/* Título principal con efecto neón magenta */
 header h1 {
     font-family: 'Press Start 2P', cursive;
     color: #ff007f;
@@ -28,6 +29,7 @@ header h1 {
     line-height: 1.5;
 }
 
+/* Contenedores de secciones con bordes neón cian */
 section {
     background-color: #1f2833;
     border: 2px solid #00ffff;
@@ -50,25 +52,7 @@ section h2 {
     text-align: center;
 }
 
-/* Mejorando la sección de estadísticas para que sea responsive */
-#seccionEstadisticas {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 15px;
-    justify-content: center;
-}
-
-#seccionEstadisticas p {
-    background-color: #0b0c10;
-    border: 1px solid #00ffff;
-    padding: 15px;
-    border-radius: 8px;
-    flex: 1 1 200px;
-    text-align: center;
-    margin: 0;
-    box-shadow: inset 0 0 10px rgba(0, 255, 255, 0.1);
-}
-
+/* Estilos de Inputs y Select (Neón verde) */
 input, select {
     width: 100%;
     padding: 12px;
@@ -98,6 +82,7 @@ input::placeholder {
     color: rgba(57, 255, 20, 0.5);
 }
 
+/* Botón de acción con estilo arcade */
 button {
     width: 100%;
     background-color: #ff007f;
@@ -110,7 +95,6 @@ button {
     border-radius: 5px;
     box-shadow: 0 0 15px #ff007f;
     transition: transform 0.1s, box-shadow 0.3s, background-color 0.3s;
-    margin-bottom: 10px; /* Separación entre botones */
 }
 
 button:hover {
@@ -124,16 +108,16 @@ button:active {
     transform: scale(0.95);
 }
 
-.tabla-contenedor {
-    width: 100%;
+/* Contenedor responsivo para la tabla */
+#listado {
     overflow-x: auto;
-    border-radius: 8px; /* Bordes suaves para la tabla */
 }
 
+/* Estilos de la Tabla */
 table {
     width: 100%;
     border-collapse: collapse;
-    min-width: 700px; 
+    min-width: 600px;
 }
 
 th, td {
@@ -143,7 +127,7 @@ th, td {
 }
 
 th {
-    background-color:  #10f017;
+    background-color: #10f017;
     color: #0b0c10;
     font-family: 'Press Start 2P', cursive;
     font-size: 10px;
@@ -154,31 +138,34 @@ th {
 
 td {
     font-size: 15px;
-    color: #ffffff; 
+    color: #ffffff;
     font-weight: bold;
 }
 
+/* Efecto Hover en las filas de la tabla */
 tbody tr {
     transition: background-color 0.3s, color 0.3s;
 }
 
 tbody tr:hover {
-    background-color: #fce803; 
+    background-color: #fce803;
     box-shadow: inset 0 0 10px rgba(252, 231, 3, 0.829);
 }
 
 tbody tr:hover td {
-    color: #000000; 
+    color: #000000;
 }
 
-/* Tarjetas */
+/* Contenedor de tarjetas */
 #contenedorTarjetas {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    /* Mejora: tarjetas un poco más anchas para que no se aplasten en pantallas medianas */
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
     gap: 20px;
     margin: 20px 0;
 }
 
+/* Tarjeta individual */
 .tarjeta {
     padding: 20px;
     border-radius: 12px;
@@ -188,9 +175,6 @@ tbody tr:hover td {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
     transition: transform 0.25s ease, box-shadow 0.25s ease, background-color 0.25s ease;
     overflow-wrap: anywhere;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
 }
 
 .tarjeta:hover {
@@ -206,34 +190,65 @@ tbody tr:hover td {
 
 .acciones-tarjeta {
     display: flex;
+    flex-wrap: wrap;
     gap: 8px;
     margin-top: 15px;
 }
 
+.tabla-contenedor {
+    width: 100%;
+    overflow-x: auto;
+}
+
+#buscarTorneo {
+    width: min(100%, 450px);
+    box-sizing: border-box;
+}
+
 #mensajeFormulario {
     font-weight: bold;
-    text-align: center;
-    margin-top: 15px;
 }
+
 #mensajeFormulario.error { color: #ff646e; }
 #mensajeFormulario.exito { color: #5de29b; }
 #mensajeFormulario.info { color: #70d6ff; }
 
-/* Animación para los modales personalizados */
-@keyframes popIn {
-    0% { transform: scale(0.8); opacity: 0; }
-    100% { transform: scale(1); opacity: 1; }
-}
-.modal-animado {
-    animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+.sin-resultados {
+    padding: 15px;
+    text-align: center;
 }
 
-/* Media Queries Responsivos */
-@media (max-width: 768px) {
-    header h1 { font-size: 18px; }
-    section { padding: 20px; }
-    section h2 { font-size: 14px; }
-    button { font-size: 12px; }
-    #contenedorTarjetas { grid-template-columns: 1fr; }
-    .acciones-tarjeta { flex-direction: column; }
+/* ==================================================
+   MEJORAS DE RESPONSIVIDAD Y DISEÑO (UI/UX)
+   ================================================== */
+
+/* Personalización del Scrollbar estilo Arcade */
+::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
 }
+::-webkit-scrollbar-track {
+    background: #07080a; 
+}
+::-webkit-scrollbar-thumb {
+    background: #ff007f; 
+    border-radius: 5px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: #00ffff; 
+}
+
+/* Media Queries para Responsividad (Tablets y Celulares) */
+@media (max-width: 768px) {
+    body {
+        padding: 10px; /* Menos espacio inútil en los bordes para móviles */
+    }
+    
+    header h1 {
+        font-size: 1.2rem;
+        word-wrap: break-word; /* Evita que el título se desborde */
+    }
+    
+    section {
+        padding: 20px 15px;
+        margin-bottom:
