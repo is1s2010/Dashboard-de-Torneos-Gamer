@@ -79,9 +79,16 @@ function mostrarTorneos(filtro = "") {
             contenidoTarjetas += "<h3>" + t.nombre + "</h3>";
             contenidoTarjetas += "<p>Categoria: " + t.categoria + "</p>";
             contenidoTarjetas += "<p>Participantes: " + t.participantes + "</p>";
-            contenidoTarjetas += "<p>Recaudación: $" + t.recaudacion.toFixed(2) + "</p>";
+            contenidoTarjetas += "<p>Recaudacion: $" + t.recaudacion.toFixed(2) + "</p>";
             contenidoTarjetas += "</div>";
-            
+
+        }
+
+        document.getElementById("cuerpoTabla").innerHTML = contenidoTabla;
+    
+        let contenedorTarjetas = document.getElementById("contenedorTarjetas");
+        if(contenedorTarjetas) {
+            contenedorTarjetas.innerHTML = contenidoTarjetas;
         }
     }
     
@@ -100,45 +107,5 @@ function limpiarFormulario() {
     mostrarTextoEnCaja("valorInscripcion", "");
     mostrarTextoEnCaja("email", "");
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
