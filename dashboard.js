@@ -100,6 +100,21 @@ function limpiarFormulario() {
     mostrarTextoEnCaja("valorInscripcion", "");
     mostrarTextoEnCaja("email", "");
 }
+function actualizarEstadisticas() {
+
+    let totalTorneos = torneos.length;
+    let totalParticipantes = 0;
+    let recaudacionTotal = 0;
+    for (let i = 0; i < torneos.length; i++) {
+
+        totalParticipantes = totalParticipantes + torneos[i].participantes;
+        recaudacionTotal = recaudacionTotal + torneos[i].recaudacion;
+    }
+    document.getElementById("totalTorneos").innerText = totalTorneos;
+    document.getElementById("totalParticipantes").innerText = totalParticipantes;
+    document.getElementById("recaudacionTotal").innerText = recaudacionTotal.toFixed(2);
+}
+
 
 
 
