@@ -1,0 +1,181 @@
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Roboto:wght@400;700&display=swap');
+
+/* Reset básico y fondo Arcade */
+body {
+    /* Fondo oscuro con un tono ligeramente azulado/morado profundo */
+    background-color: #07080a; 
+    
+    /* Efecto de cuadrícula (grid) estilo retro arcade */
+    background-image: 
+        linear-gradient(rgb(44, 214, 214) 1px, transparent 1px),
+        linear-gradient(90deg, rgb(195, 20, 239) 1px, transparent 1px);
+    background-size: 40px 40px;
+    background-position: center center;
+    
+    /* Propiedades originales mantenidas para no romper el diseño */
+    color: #ffffff;
+    font-family: 'Roboto', sans-serif;
+    margin: 0;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh; /* Asegura que el fondo cubra toda la pantalla siempre */
+}
+
+/* Título principal con efecto neón magenta */
+header h1 {
+    font-family: 'Press Start 2P', cursive;
+    color: #ff007f;
+    text-shadow: 0 0 10px #ff007f, 0 0 20px #ff007f;
+    text-align: center;
+    font-size: 24px;
+    margin-bottom: 40px;
+    line-height: 1.5;
+}
+
+/* Contenedores de secciones con bordes neón cian */
+section {
+    background-color: #1f2833;
+    border: 2px solid #00ffff;
+    box-shadow: 0 0 15px rgba(0, 255, 255, 0.5);
+    border-radius: 10px;
+    padding: 30px;
+    margin-bottom: 30px;
+    width: 100%;
+    max-width: 800px;
+    box-sizing: border-box;
+}
+
+section h2 {
+    font-family: 'Press Start 2P', cursive;
+    color: #00ffff;
+    text-shadow: 0 0 8px #00ffff;
+    font-size: 16px;
+    margin-top: 0;
+    margin-bottom: 25px;
+    text-align: center;
+}
+
+/* Estilos de Inputs y Select (Neón verde) */
+input, select {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 15px;
+    background-color: #0b0c10;
+    border: 1px solid #39ff14;
+    color: #39ff14;
+    border-radius: 5px;
+    font-family: 'Roboto', sans-serif;
+    font-size: 16px;
+    box-sizing: border-box;
+    transition: box-shadow 0.3s ease;
+}
+
+input:focus, select:focus {
+    outline: none;
+    box-shadow: 0 0 10px #39ff14;
+}
+
+input:hover, select:hover {
+    box-shadow: 0 0 8px rgba(46, 242, 11, 0.7);
+    background-color: #223229;
+    border-color: #5eff33;
+}
+
+input::placeholder {
+    color: rgba(57, 255, 20, 0.5);
+}
+
+/* Botón de acción con estilo arcade */
+button {
+    width: 100%;
+    background-color: #ff007f;
+    color: #ffffff;
+    border: none;
+    padding: 15px;
+    font-family: 'Press Start 2P', cursive;
+    font-size: 14px;
+    cursor: pointer;
+    border-radius: 5px;
+    box-shadow: 0 0 15px #ff007f;
+    transition: transform 0.1s, box-shadow 0.3s, background-color 0.3s;
+}
+
+button:hover {
+    background-color: #ffffff;
+    color: #ff007f;
+    box-shadow: 0 0 25px #ff007f;
+}
+
+button:active {
+    transform: scale(0.95);
+}
+
+/* Contenedor responsivo para la tabla */
+#listado {
+    overflow-x: auto; /* Permite scroll horizontal en móviles */
+}
+
+/* Estilos de la Tabla */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 600px; /* Asegura que la tabla no se colapse demasiado */
+}
+
+th, td {
+    border: 1px solid #45a29e;
+    padding: 12px;
+    text-align: left;
+}
+
+th {
+    background-color:  #10f017;;
+    color: #0b0c10;
+    font-family: 'Press Start 2P', cursive;
+    font-size: 10px;
+    text-transform: uppercase;
+    line-height: 1.8;
+    letter-spacing: 1px;
+}
+
+td {
+    font-size: 15px;
+    color: #ffffff; /* Color blanco para mayor contraste */
+    font-weight: bold;
+}
+
+/* Efecto Hover en las filas de la tabla (Legible) */
+tbody tr {
+    transition: background-color 0.3s, color 0.3s;
+}
+
+tbody tr:hover {
+    background-color: #fce803; /* Amarillo neón brillante */
+    box-shadow: inset 0 0 10px rgba(252, 231, 3, 0.829);
+}
+
+tbody tr:hover td {
+    color: #000000; /* Texto negro para mantener legibilidad total */
+    font-weight: bold;
+}
+
+/* Media Queries para Responsividad (iPads y Celulares) */
+@media (max-width: 768px) {
+    header h1 {
+        font-size: 18px;
+    }
+    
+    section {
+        padding: 20px;
+    }
+
+    section h2 {
+        font-size: 14px;
+    }
+
+    button {
+        font-size: 12px;
+    }
+}

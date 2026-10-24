@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="es">
+   <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Dashboard de Torneos Gamer</title>
+        <link rel="stylesheet" href="estilis.css">
+        </head>
+    <body>
+        <header>
+            <h1>Dashboard de Torneos Gamer</h1>
+        </header>
+
+        <section id="registro">
+        <h2>Registro de Torneos</h2>
+        
+        <input type="text" id="nombre" placeholder="Nombre del torneo">
+        
+        <select id="categoria">
+            <option value="">Seleccione una categoria...</option>
+            <option value="Lucha">Lucha</option>
+            <option value="Estrategia">Estrategia</option>
+            <option value="Arcade">Arcade</option>
+            <option value="Deportes">Deportes</option>
+            <option value="Aventura">Aventura</option>
+        </select>
+        
+        <input type="number" id="participantes" placeholder="Participantes">
+        <input type="number" id="valorInscripcion" placeholder="Valor de inscripcion">
+        <input type="email" id="email" placeholder="Email del organizador">
+        <br><br>
+
+        <button onclick="registrarTorneo()">REGISTRAR TORNEO</button>
+    </section>
+
+     <section id="listado">
+        <h2>Torneos Registrados</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Nombre </th>
+                    <th>Categoria </th>
+                    <th>Participantes </th>
+                    <th>Valor de inscripcion </th>
+                    <th>Email </th>
+                    <th>Recaudacion estimada </th>
+                </tr>
+            </thead>
+            <tbody id="cuerpoTabla">
+               
+            </tbody>
+        </table>
+    </section>
+
+    <script src="utilitarios.js"></script>
+    <script src="dashboard.js"></script>
+    </body>
+</html>
+
+
+
+
