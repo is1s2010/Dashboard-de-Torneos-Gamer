@@ -1,78 +1,163 @@
+
 <!DOCTYPE html>
 <html lang="es">
-   <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Dashboard de Torneos Gamer</title>
-        <link rel="stylesheet" href="estilis.css">
-        </head>
-    <body>
-        <header>
-            <h1>Dashboard de Torneos Gamer</h1>
-        </header>
 
-        <section id="registro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Dashboard de Torneos Gamer</title>
+
+    <link rel="stylesheet" href="estilis.css">
+</head>
+
+<body>
+
+    <header>
+        <h1>Dashboard de Torneos Gamer</h1>
+    </header>
+
+    <!-- FORMULARIO DE REGISTRO -->
+    <section id="registro">
+
         <h2>Registro de Torneos</h2>
-        
-        <input type="text" id="nombre" placeholder="Nombre del torneo">
-        
-        <select id="categoria">
-            <option value="">Seleccione una categoria...</option>
-            <option value="Lucha">Lucha</option>
-            <option value="Estrategia">Estrategia</option>
-            <option value="Arcade">Arcade</option>
-            <option value="Deportes">Deportes</option>
-            <option value="Aventura">Aventura</option>
-        </select>
-        
-        <input type="number" id="participantes" placeholder="Participantes">
-        <input type="number" id="valorInscripcion" placeholder="Valor de inscripcion">
-        <input type="email" id="email" placeholder="Email del organizador">
-        <br><br>
 
-        <button onclick="registrarTorneo()">REGISTRAR TORNEO</button>
+        <form id="formularioTorneo">
+
+            <input
+                type="text"
+                id="nombre"
+                placeholder="Nombre del torneo"
+                required
+            >
+
+            <select id="categoria" required>
+                <option value="">Seleccione una categoria...</option>
+                <option value="Lucha">Lucha</option>
+                <option value="Estrategia">Estrategia</option>
+                <option value="Arcade">Arcade</option>
+                <option value="Deportes">Deportes</option>
+                <option value="Aventura">Aventura</option>
+            </select>
+
+            <input
+                type="number"
+                id="participantes"
+                placeholder="Participantes"
+                min="1"
+                max="100"
+                step="1"
+                required
+            >
+
+            <input
+                type="number"
+                id="valorInscripcion"
+                placeholder="Valor de inscripcion"
+                min="0.01"
+                step="0.01"
+                required
+            >
+
+            <input
+                type="email"
+                id="email"
+                placeholder="Email del organizador"
+                required
+            >
+
+            <br><br>
+
+            <button type="submit" id="btnRegistrarTorneo">
+                REGISTRAR TORNEO
+            </button>
+
+            <button type="button" id="btnCancelarEdicion" hidden>
+                CANCELAR EDICIÓN
+            </button>
+
+            <p id="mensajeFormulario" role="status" aria-live="polite"></p>
+
+        </form>
+
     </section>
 
+    <!-- BÚSQUEDA -->
     <section id="busqueda">
-            
+
+        <h2>Buscar torneos</h2>
+
+        <input
+            type="search"
+            id="buscarTorneo"
+            placeholder="Buscar por nombre o categoría..."
+            aria-label="Buscar torneos por nombre o categoría"
+        >
+
     </section>
 
+    <!-- ESTADÍSTICAS -->
     <section id="seccionEstadisticas">
-    <h2>Estadísticas</h2>
-    <p>Total de torneos: <span id="totalTorneos">0</span></p>
-    <p>Total de participantes: <span id="totalParticipantes">0</span></p>
-    <p>Recaudación total: $<span id="recaudacionTotal">0.00</span></p>
+
+        <h2>Estadísticas</h2>
+
+        <p>
+            Total de torneos:
+            <span id="totalTorneos">0</span>
+        </p>
+
+        <p>
+            Total de participantes:
+            <span id="totalParticipantes">0</span>
+        </p>
+
+        <p>
+            Recaudación total:
+            $<span id="recaudacionTotal">0.00</span>
+        </p>
+
     </section>
 
+    <!-- TARJETAS -->
     <section id="tarjetas">
+
+        <h2>Resumen de torneos</h2>
+
         <div id="contenedorTarjetas"></div>
+
     </section>
 
-     <section id="listado">
+    <!-- TABLA -->
+    <section id="listado">
+
         <h2>Torneos Registrados</h2>
-        <table>
-            <thead>
-                <tr>
-                    <th>Nombre </th>
-                    <th>Categoria </th>
-                    <th>Participantes </th>
-                    <th>Valor de inscripcion </th>
-                    <th>Email </th>
-                    <th>Recaudacion estimada </th>
-                    <th>Acciones</th>
-                </tr>
-            </thead>
-            <tbody id="cuerpoTabla">
-               
-            </tbody>
-        </table>
+
+        <div class="tabla-contenedor">
+
+            <table>
+
+                <thead>
+                    <tr>
+                        <th>Nombre</th>
+                        <th>Categoria</th>
+                        <th>Participantes</th>
+                        <th>Valor de inscripción</th>
+                        <th>Email</th>
+                        <th>Recaudación estimada</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+
+                <tbody id="cuerpoTabla"></tbody>
+
+            </table>
+
+        </div>
+
     </section>
 
     <script src="utilitarios.js"></script>
     <script src="dashboard.js"></script>
-    </body>
+
+</body>
 </html>
-
-
-
-
