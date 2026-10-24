@@ -1,69 +1,63 @@
 <!DOCTYPE html>
-<html>
-    <head>
-        <script src="dashboard.js"></script>
-        <script src="utilitarios.js"></script>
-        <script src="estilis.css"></script>
+<html lang="es">
+   <head>
 
-        <h1>Dashboard de Torneos Gamer</h1>
-
+    <meta charset="UTF-8">
+    <title>Dashboard de Torneos Gamer</title>
+    <link rel="stylesheet" href="estilos.css">
 
     </head>
     <body>
+        <header>
+            <h1>Dashboard de Torneos Gamer</h1>
+        </header>
 
-    <nav>
-        <!-- Los parámetros de estas funciones ahora coinciden exactamente con los ID de abajo -->
-        <button onclick="mostrarSeccion('NombreTor')">Nombre Del Torneo</button>
-        <button onclick="mostrarSeccion('Categoria')">Categoria</button>
-        <button onclick="mostrarSeccion('Participantes')">Participantes</button>
-        <button onclick="mostrarSeccion('ValorInscripcion')">Valor de inscripcion </button>
-        <button onclick="mostrarSeccion('Email')">Email</button>
-    </nav>
+        <section id="registro">
+        <h2>Registro de Torneos</h2>
+        
+        <input type="text" id="nombre" placeholder="Nombre del torneo">
+        
+        <select id="categoria">
+            <option value="">Seleccione una categoria...</option>
+            <option value="Lucha">Lucha</option>
+            <option value="Estrategia">Estrategia</option>
+            <option value="Arcade">Arcade</option>
+            <option value="Deportes">Deportes</option>
+            <option value="Aventura">Aventura</option>
+        </select>
+        
+        <input type="number" id="participantes" placeholder="Participantes">
+        <input type="number" id="valorInscripcion" placeholder="Valor de inscripcion">
+        <input type="email" id="email" placeholder="Email del organizador">
+        <br><br>
 
-    <section id="NombreTor">
-
-
+        <button onclick="registrarTorneo()">REGISTRAR TORNEO</button>
     </section>
-    <section id="Categoria">
 
-        <input type="text" id="cedulaCli" placeholder="Lucha">
-        <input type="text" id="nombreCli" placeholder="Estrategia">
-        <input type="text" id="apellidoCli" placeholder="Arcade">
-        <input type="number" id="ingresosCli" placeholder="Deportes">
-        <input type="number" id="egresosCli" placeholder="Aventura">
-        <br>
-
-        <button onclick="guardarCliente()">Guardar cliente</button>
-        <button onclick="limpiar()">Limpiar</button>
-
+     <section id="listado">
+        <h2>Torneos Registrados</h2>
         <table>
             <thead>
-            <tr>
-                <th>Lucha</th>
-                <th>Estrategia</th>
-                <th>Arcade</th>
-                <th>Deportes</th>
-                <th>Aventura</th>
-            </tr>
+                <tr>
+                    <th>Nombre </th>
+                    <th>Categoria </th>
+                    <th>Participantes </th>
+                    <th>Valor de inscripcion </th>
+                    <th>Email </th>
+                    <th>Recaudacion estimada </th>
+                </tr>
             </thead>
-            <tbody id="tablaClientes">
+            <tbody id="cuerpoTabla">
+               
             </tbody>
         </table>
-        </section>
-
     </section>
 
-    <section id="Participantes">
-
-    </section>
-
-    <section id="ValorInscripcion">
-
-    </section>
-
-    <section id="Email">
-
-    </section>
-
+    <script src="utilitarios.js"></script>
+    <script src="dashboard.js"></script>
     </body>
 </html>
+
+
+
+
