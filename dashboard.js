@@ -50,22 +50,47 @@ function registrarTorneo() {
 }
 
 
-function mostrarTorneos() {
+function mostrarTorneos(filtro = "") {
     let contenidoTabla = "";
+    let contenidoTarjetas = "";
     
     for (let i = 0; i < torneos.length; i++) {
         let t = torneos[i];
-        contenidoTabla += "<tr>";
-        contenidoTabla += "<td>" + t.nombre  + "</td>";
-        contenidoTabla += "<td>" + t.categoria  + "</td>";
-        contenidoTabla += "<td>" + t.participantes  + "</td>";
-        contenidoTabla += "<td>$" + t.valorInscripcion.toFixed(2)  + "</td>";
-        contenidoTabla += "<td>" + t.email  + "</td>";
-        contenidoTabla += "<td>$" + t.recaudacion.toFixed(2)  + "</td>";
-        contenidoTabla += "</tr>";
+        
+        let textoBusqueda = filtro.toLowerCase();
+        let coincideNombre = t.nombre.toLowerCase().includes(textoBusqueda);
+        let coincideCategoria = t.categoria.toLowerCase().includes(textoBusqueda);
+        
+        if (coincideNombre || coincideCategoria || filtro === "") {
+            contenidoTabla += "<tr>";
+            contenidoTabla += "<td>" + t.nombre  + "</td>";
+            contenidoTabla += "<td>" + t.categoria  + "</td>";
+            contenidoTabla += "<td>" + t.participantes  + "</td>";
+            contenidoTabla += "<td>$" + t.valorInscripcion.toFixed(2)  + "</td>";
+            contenidoTabla += "<td>" + t.email  + "</td>";
+            contenidoTabla += "<td>$" + t.recaudacion.toFixed(2)  + "</td>";
+            contenidoTabla += "<td>";
+            contenidoTabla += "<button onclick='editarTorneo(" + i + ")'>EDITAR</button> ";
+            contenidoTabla += "<button onclick='eliminarTorneo(" + i + ")'>ELIMINAR</button>";
+            contenidoTabla += "</td>";
+            contenidoTabla += "</tr>";
+
+            contenidoTarjetas += "<div class='tarjeta'>";
+            contenidoTarjetas += "<h3>" + t.nombre + "</h3>";
+            contenidoTarjetas += "<p>Categoria: " + t.categoria + "</p>";
+            contenidoTarjetas += "<p>Participantes: " + t.participantes + "</p>";
+            contenidoTarjetas += "<p>Recaudación: $" + t.recaudacion.toFixed(2) + "</p>";
+            contenidoTarjetas += "</div>";
+            
+        }
     }
     
     document.getElementById("cuerpoTabla").innerHTML = contenidoTabla;
+    
+    let contenedorTarjetas = document.getElementById("contenedorTarjetas");
+    if(contenedorTarjetas) {
+        contenedorTarjetas.innerHTML = contenidoTarjetas;
+    }
 }
 
 function limpiarFormulario() {
