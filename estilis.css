@@ -179,3 +179,98 @@ tbody tr:hover td {
         font-size: 12px;
     }
 }
+
+
+/* Contenedor de tarjetas */
+#contenedorTarjetas {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 20px;
+    margin: 20px 0;
+}
+
+/* Tarjeta individual */
+.tarjeta {
+    padding: 20px;
+    border-radius: 12px;
+    border: 1px solid #343a46;
+    background-color: #181c27;
+    color: #f4f4f5;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
+    transition:
+        transform 0.25s ease,
+        box-shadow 0.25s ease,
+        background-color 0.25s ease;
+    overflow-wrap: anywhere;
+}
+
+.tarjeta:hover {
+    background-color: #252d3d;
+    transform: translateY(-6px);
+    box-shadow: 0 12px 25px rgba(0, 0, 0, 0.3);
+}
+
+.tarjeta h3 {
+    margin-top: 0;
+    color: #70d6ff;
+}
+
+.acciones-tarjeta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 15px;
+}
+
+.acciones-tarjeta button {
+    cursor: pointer;
+}
+
+.tabla-contenedor {
+    width: 100%;
+    overflow-x: auto;
+}
+
+#buscarTorneo {
+    width: min(100%, 450px);
+    box-sizing: border-box;
+}
+
+#mensajeFormulario {
+    font-weight: bold;
+}
+
+#mensajeFormulario.error {
+    color: #ff646e;
+}
+
+#mensajeFormulario.exito {
+    color: #5de29b;
+}
+
+#mensajeFormulario.info {
+    color: #70d6ff;
+}
+
+.sin-resultados {
+    padding: 15px;
+    text-align: center;
+}
+
+button {
+    transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+button:hover {
+    transform: translateY(-2px);
+}
+
+@media (max-width: 600px) {
+    #contenedorTarjetas {
+        grid-template-columns: 1fr;
+    }
+
+    table {
+        min-width: 750px;
+    }
+}
