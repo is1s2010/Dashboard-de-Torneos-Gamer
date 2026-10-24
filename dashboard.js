@@ -346,7 +346,7 @@ function eliminarTorneo(indice) {
 
     // Actualizar las vistas y estadísticas.
     mostrarTorneos();
-    actualizarEstadisticas());
+    actualizarEstadisticas();
 
     mostrarMensaje(
         "El torneo se eliminó correctamente.",
