@@ -129,5 +129,17 @@ function actualizarEstadisticas() {
 }
  }
 
+/* =========================================================
+   ACTIVIDAD 5: BUSCAR TORNEOS
+   ========================================================= */
+
+function buscarTorneos() {
+
+    // La tabla y las tarjetas vuelven a dibujarse
+    // con el contenido actual de la caja de búsqueda.
+    mostrarTorneos();
+}
+
+
 
 
