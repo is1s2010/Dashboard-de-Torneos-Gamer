@@ -1,38 +1,412 @@
 
 /* =========================================================
-   DASHBOARD DE TORNEOS GAMER
-   Actividades 1, 2, 3, 4, 5 y 6
+   ELITE ARENA
+   Dashboard de gestión de torneos
+   HTML + CSS + JavaScript puro
    ========================================================= */
 
-// Arreglo global donde se guardan los torneos.
-let torneos = [];
+"use strict";
 
-// -1 significa que no estamos editando ningún torneo.
+const CLAVE_ALMACENAMIENTO = "eliteArenaTorneos";
+
+let torneos = cargarTorneos();
 let indiceEdicion = -1;
+let indiceEliminacion = -1;
 
+// Elementos del formulario
+const formulario = document.getElementById("formularioTorneo");
+const campoNombre = document.getElementById("nombre");
+const campoCategoria = document.getElementById("categoria");
+const campoParticipantes = document.getElementById("participantes");
+const campoValor = document.getElementById("valorInscripcion");
+const campoEmail = document.getElementById("email");
 
-/* =========================================================
-   FUNCIONES AUXILIARES
-   ========================================================= */
+// Elementos de visualización
+const cuerpoTabla = document.getElementById("cuerpoTabla");
+const buscarTorneo = document.getElementById("buscarTorneo");
+const estadoVacio = document.getElementById("estadoVacio");
+const dialogoEliminar = document.getElementById("dialogoEliminar");
 
-// Obtener un elemento por su ID.
-function obtenerElemento(id) {
-    return document.getElementById(id);
+// ---------------------------------------------------------
+// 1. INICIALIZACIÓN
+// ---------------------------------------------------------
+
+document.addEventListener("DOMContentLoaded", iniciarDashboard);
+
+function iniciarDashboard() {
+    actualizarFecha();
+    mostrarTorneos();
+    actualizarEstadisticas();
+
+    formulario.addEventListener("submit", guardarTorneo);
+
+    buscarTorneo.addEventListener("input", function () {
+        mostrarTorneos(buscarTorneo.value);
+    });
+
+    document.getElementById("btnCancelar").addEventListener(
+        "click",
+        cancelarEdicion
+    );
+
+    document.getElementById("btnLimpiarBusqueda").addEventListener(
+        "click",
+        function () {
+            buscarTorneo.value = "";
+            mostrarTorneos();
+            buscarTorneo.focus();
+        }
+    );
+
+    // Delegación de eventos: identifica el índice de cada torneo.
+    cuerpoTabla.addEventListener("click", function (evento) {
+        const boton = evento.target.closest("button[data-accion]");
+
+        if (!boton) {
+            return;
+        }
+
+        const indice = Number(boton.dataset.indice);
+
+        if (!Number.isInteger(indice) ||
+            indice < 0 ||
+            indice >= torneos.length) {
+            notificar("Registro no válido", "No se encontró ese torneo.", "error");
+            return;
+        }
+
+        if (boton.dataset.accion === "editar") {
+            editarTorneo(indice);
+        }
+
+        if (boton.dataset.accion === "eliminar") {
+            solicitarEliminacion(indice);
+        }
+    });
+
+    document.getElementById("btnNoEliminar").addEventListener(
+        "click",
+        function () {
+            dialogoEliminar.close();
+            indiceEliminacion = -1;
+        }
+    );
+
+    document.getElementById("btnConfirmarEliminar").addEventListener(
+        "click",
+        confirmarEliminacion
+    );
+
+    // Cierra el diálogo al pulsar fuera de su contenido.
+    dialogoEliminar.addEventListener("click", function (evento) {
+        if (evento.target === dialogoEliminar) {
+            dialogoEliminar.close();
+            indiceEliminacion = -1;
+        }
+    });
+
+    // Quita el mensaje de error de cada campo al modificarlo.
+    [campoNombre, campoCategoria, campoParticipantes,
+        campoValor, campoEmail].forEach(function (campo) {
+        campo.addEventListener("input", function () {
+            limpiarError(campo.id);
+        });
+
+        campo.addEventListener("change", function () {
+            limpiarError(campo.id);
+        });
+    });
 }
 
-// Mostrar un mensaje en el formulario.
-function mostrarMensaje(mensaje, tipo = "error") {
-    const elemento = obtenerElemento("mensajeFormulario");
+// ---------------------------------------------------------
+// 2. FECHA ACTUAL
+// ---------------------------------------------------------
 
-    elemento.textContent = mensaje;
-    elemento.className = tipo;
+function actualizarFecha() {
+    const ahora = new Date();
+
+    document.getElementById("fechaActual").textContent =
+        new Intl.DateTimeFormat("es-EC", {
+            day: "2-digit",
+            month: "short",
+            year: "numeric"
+        }).format(ahora);
 }
 
-// Evitar que los datos escritos por el usuario se interpreten
-// como etiquetas HTML al construir la tabla y las tarjetas.
+// ---------------------------------------------------------
+// 3. ALMACENAMIENTO LOCAL
+// ---------------------------------------------------------
+
+function cargarTorneos() {
+    try {
+        const datos = localStorage.getItem(CLAVE_ALMACENAMIENTO);
+
+        if (!datos) {
+            return [];
+        }
+
+        const registros = JSON.parse(datos);
+
+        if (!Array.isArray(registros)) {
+            return [];
+        }
+
+        // Verifica que cada registro tenga la estructura esperada.
+        return registros.filter(function (torneo) {
+            return torneo &&
+                typeof torneo.nombre === "string" &&
+                typeof torneo.categoria === "string" &&
+                Number.isInteger(torneo.participantes) &&
+                Number.isFinite(torneo.valorInscripcion) &&
+                typeof torneo.email === "string";
+        }).map(function (torneo) {
+            return {
+                nombre: torneo.nombre,
+                categoria: torneo.categoria,
+                participantes: torneo.participantes,
+                valorInscripcion: torneo.valorInscripcion,
+                email: torneo.email,
+                recaudacion:
+                    torneo.participantes * torneo.valorInscripcion
+            };
+        });
+    } catch (error) {
+        console.error("No se pudieron cargar los torneos:", error);
+        return [];
+    }
+}
+
+function guardarEnAlmacenamiento() {
+    try {
+        localStorage.setItem(
+            CLAVE_ALMACENAMIENTO,
+            JSON.stringify(torneos)
+        );
+
+        return true;
+    } catch (error) {
+        console.error("Error al guardar los torneos:", error);
+
+        notificar(
+            "Error de almacenamiento",
+            "El navegador no permitió guardar los cambios. Revisa el espacio disponible.",
+            "error"
+        );
+
+        return false;
+    }
+}
+
+// ---------------------------------------------------------
+// 4. VALIDACIONES
+// ---------------------------------------------------------
+
+function validarFormulario() {
+    limpiarTodosLosErrores();
+
+    let valido = true;
+    const nombre = campoNombre.value.trim();
+    const categoria = campoCategoria.value;
+    const participantesTexto = campoParticipantes.value.trim();
+    const valorTexto = campoValor.value.trim();
+    const email = campoEmail.value.trim();
+
+    const participantes = Number(participantesTexto);
+    const valorInscripcion = Number(valorTexto);
+
+    if (nombre.length < 4) {
+        mostrarError(
+            "nombre",
+            "El nombre debe tener al menos 4 caracteres."
+        );
+        valido = false;
+    } else if (nombre.length > 80) {
+        mostrarError(
+            "nombre",
+            "El nombre no puede superar los 80 caracteres."
+        );
+        valido = false;
+    }
+
+    const categoriasPermitidas = [
+        "Lucha",
+        "Estrategia",
+        "Arcade",
+        "Deportes",
+        "Aventura"
+    ];
+
+    if (!categoriasPermitidas.includes(categoria)) {
+        mostrarError("categoria", "Selecciona una categoría válida.");
+        valido = false;
+    }
+
+    if (
+        participantesTexto === "" ||
+        !Number.isInteger(participantes) ||
+        participantes < 1 ||
+        participantes > 100
+    ) {
+        mostrarError(
+            "participantes",
+            "Ingresa un número entero entre 1 y 100."
+        );
+        valido = false;
+    }
+
+    if (
+        valorTexto === "" ||
+        !Number.isFinite(valorInscripcion) ||
+        valorInscripcion <= 0 ||
+        valorInscripcion > 1000000
+    ) {
+        mostrarError(
+            "valorInscripcion",
+            "El importe debe ser mayor que 0 y no superar $1.000.000."
+        );
+        valido = false;
+    }
+
+    // Formato básico de correo: texto@dominio.extensión
+    const patronEmail = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+
+    if (email.length > 120 || !patronEmail.test(email)) {
+        mostrarError(
+            "email",
+            "Introduce un correo válido, por ejemplo usuario@dominio.com."
+        );
+        valido = false;
+    }
+
+    return {
+        valido: valido,
+        datos: {
+            nombre: nombre,
+            categoria: categoria,
+            participantes: participantes,
+            valorInscripcion: valorInscripcion,
+            email: email,
+            recaudacion: participantes * valorInscripcion
+        }
+    };
+}
+
+function mostrarError(idCampo, mensaje) {
+    const campo = document.getElementById(idCampo);
+    const contenedor = campo.closest(".field");
+    const error = document.getElementById("error" + (
+        idCampo === "valorInscripcion" ? "Valor" :
+        idCampo.charAt(0).toUpperCase() + idCampo.slice(1)
+    ));
+
+    if (contenedor) {
+        contenedor.classList.add("has-error");
+    }
+
+    if (error) {
+        error.textContent = mensaje;
+    }
+}
+
+function limpiarError(idCampo) {
+    const campo = document.getElementById(idCampo);
+    const contenedor = campo.closest(".field");
+    const idError = "error" + (
+        idCampo === "valorInscripcion" ? "Valor" :
+        idCampo.charAt(0).toUpperCase() + idCampo.slice(1)
+    );
+
+    const error = document.getElementById(idError);
+
+    if (contenedor) {
+        contenedor.classList.remove("has-error");
+    }
+
+    if (error) {
+        error.textContent = "";
+    }
+}
+
+function limpiarTodosLosErrores() {
+    [
+        "nombre",
+        "categoria",
+        "participantes",
+        "valorInscripcion",
+        "email"
+    ].forEach(limpiarError);
+}
+
+// ---------------------------------------------------------
+// 5. REGISTRAR Y ACTUALIZAR
+// ---------------------------------------------------------
+
+function guardarTorneo(evento) {
+    evento.preventDefault();
+
+    const resultado = validarFormulario();
+
+    if (!resultado.valido) {
+        const primerError = document.querySelector(".field.has-error input, .field.has-error select");
+
+        if (primerError) {
+            primerError.focus();
+        }
+
+        notificar(
+            "Revisa los datos",
+            "Hay campos incorrectos. Corrígelos antes de continuar.",
+            "error"
+        );
+
+        return;
+    }
+
+    const torneoAnterior = indiceEdicion >= 0
+        ? { ...torneos[indiceEdicion] }
+        : null;
+
+    if (indiceEdicion >= 0) {
+        torneos[indiceEdicion] = resultado.datos;
+    } else {
+        torneos.push(resultado.datos);
+    }
+
+    // No confirma la operación si no se pudo guardar.
+    if (!guardarEnAlmacenamiento()) {
+        if (torneoAnterior) {
+            torneos[indiceEdicion] = torneoAnterior;
+        } else {
+            torneos.pop();
+        }
+
+        return;
+    }
+
+    const estabaEditando = indiceEdicion >= 0;
+
+    cancelarEdicion();
+    formulario.reset();
+
+    mostrarTorneos(buscarTorneo.value);
+    actualizarEstadisticas();
+
+    notificar(
+        estabaEditando ? "Torneo actualizado" : "Registro exitoso",
+        estabaEditando
+            ? "Los cambios se guardaron correctamente."
+            : "El nuevo torneo se ha registrado correctamente.",
+        "success"
+    );
+}
+
+// ---------------------------------------------------------
+// 6. MOSTRAR TABLA Y BÚSQUEDA
+// ---------------------------------------------------------
+
 function escaparHTML(valor) {
     return String(valor).replace(/[&<>"']/g, function (caracter) {
-        const caracteres = {
+        const entidades = {
             "&": "&amp;",
             "<": "&lt;",
             ">": "&gt;",
@@ -40,510 +414,286 @@ function escaparHTML(valor) {
             "'": "&#39;"
         };
 
-        return caracteres[caracter];
+        return entidades[caracter];
     });
 }
 
-// Dar formato monetario a los valores.
-function formatoMoneda(valor) {
-    return Number(valor).toFixed(2);
+function formatearDinero(valor) {
+    return new Intl.NumberFormat("es-EC", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    }).format(valor);
 }
 
+function mostrarTorneos(filtro = "") {
+    const busqueda = filtro.trim().toLocaleLowerCase("es");
+    let html = "";
+    let cantidadVisible = 0;
 
-/* =========================================================
-   ACTIVIDAD 1 Y ACTIVIDAD 2
-   REGISTRAR O ACTUALIZAR UN TORNEO
-   ========================================================= */
+    torneos.forEach(function (torneo, indice) {
+        const nombre = torneo.nombre.toLocaleLowerCase("es");
+        const categoria = torneo.categoria.toLocaleLowerCase("es");
 
-function registrarTorneo() {
-
-    // Recuperar los datos del formulario.
-    const nombre = obtenerElemento("nombre").value.trim();
-    const categoria = obtenerElemento("categoria").value;
-    const participantesTexto =
-        obtenerElemento("participantes").value.trim();
-    const valorTexto =
-        obtenerElemento("valorInscripcion").value.trim();
-    const email = obtenerElemento("email").value.trim();
-
-    const participantes = Number(participantesTexto);
-    const valorInscripcion = Number(valorTexto);
-
-    // VALIDACIÓN DEL NOMBRE.
-    if (nombre.length < 4) {
-        mostrarMensaje(
-            "El nombre debe tener al menos 4 caracteres."
-        );
-        obtenerElemento("nombre").focus();
-        return;
-    }
-
-    // VALIDACIÓN DE LA CATEGORÍA.
-    if (categoria === "") {
-        mostrarMensaje("Debes seleccionar una categoría.");
-        obtenerElemento("categoria").focus();
-        return;
-    }
-
-    // VALIDACIÓN DE LOS PARTICIPANTES.
-    if (
-        participantesTexto === "" ||
-        !Number.isInteger(participantes) ||
-        participantes < 1 ||
-        participantes > 100
-    ) {
-        mostrarMensaje(
-            "Los participantes deben ser un número entero entre 1 y 100."
-        );
-        obtenerElemento("participantes").focus();
-        return;
-    }
-
-    // VALIDACIÓN DEL VALOR DE INSCRIPCIÓN.
-    if (
-        valorTexto === "" ||
-        !Number.isFinite(valorInscripcion) ||
-        valorInscripcion <= 0
-    ) {
-        mostrarMensaje(
-            "El valor de inscripción debe ser mayor que cero."
-        );
-        obtenerElemento("valorInscripcion").focus();
-        return;
-    }
-
-    // VALIDACIÓN DEL CORREO.
-    const campoEmail = obtenerElemento("email");
-
-    if (
-        email === "" ||
-        !campoEmail.checkValidity() ||
-        !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
-    ) {
-        mostrarMensaje(
-            "Ingresa un correo válido, por ejemplo jugador@gmail.com."
-        );
-        campoEmail.focus();
-        return;
-    }
-
-    // Calcular nuevamente la recaudación.
-    const recaudacion = participantes * valorInscripcion;
-
-    // Construir el objeto del torneo.
-    const torneo = {
-        nombre: nombre,
-        categoria: categoria,
-        participantes: participantes,
-        valorInscripcion: valorInscripcion,
-        email: email,
-        recaudacion: recaudacion
-    };
-
-    // Si el índice es -1, registramos un torneo nuevo.
-    if (indiceEdicion === -1) {
-
-        torneos.push(torneo);
-
-        mostrarMensaje(
-            "¡Torneo registrado correctamente!",
-            "exito"
-        );
-
-    } else {
-
-        // Si estamos editando, reemplazamos el objeto existente.
-        // No utilizamos push(), porque crearía un registro adicional.
-        torneos[indiceEdicion] = torneo;
-
-        mostrarMensaje(
-            "¡Torneo actualizado correctamente!",
-            "exito"
-        );
-    }
-
-    // Actualizar todas las vistas.
-    mostrarTorneos();
-    actualizarEstadisticas();
-
-    // Restablecer el formulario.
-    limpiarFormulario();
-}
-
-
-/* =========================================================
-   PINTAR LA TABLA
-   ACTIVIDAD 1: BOTONES EDITAR Y ELIMINAR
-   ========================================================= */
-
-function mostrarTorneos() {
-
-    const cuerpoTabla = obtenerElemento("cuerpoTabla");
-    const textoBusqueda =
-        obtenerElemento("buscarTorneo").value.trim().toLowerCase();
-
-    let contenidoTabla = "";
-
-    for (let i = 0; i < torneos.length; i++) {
-
-        const torneo = torneos[i];
-
-        // Buscar por nombre o categoría.
-        const coincideNombre =
-            torneo.nombre.toLowerCase().includes(textoBusqueda);
-
-        const coincideCategoria =
-            torneo.categoria.toLowerCase().includes(textoBusqueda);
-
-        if (coincideNombre || coincideCategoria) {
-
-            contenidoTabla += `
-                <tr>
-                    <td>${escaparHTML(torneo.nombre)}</td>
-
-                    <td>${escaparHTML(torneo.categoria)}</td>
-
-                    <td>${torneo.participantes}</td>
-
-                    <td>$${formatoMoneda(torneo.valorInscripcion)}</td>
-
-                    <td>${escaparHTML(torneo.email)}</td>
-
-                    <td>$${formatoMoneda(torneo.recaudacion)}</td>
-
-                    <td>
-                        <button
-                            type="button"
-                            onclick="editarTorneo(${i})"
-                        >
-                            EDITAR
-                        </button>
-
-                        <button
-                            type="button"
-                            onclick="eliminarTorneo(${i})"
-                        >
-                            ELIMINAR
-                        </button>
-                    </td>
-                </tr>
-            `;
+        if (
+            busqueda !== "" &&
+            !nombre.includes(busqueda) &&
+            !categoria.includes(busqueda)
+        ) {
+            return;
         }
-    }
 
-    if (contenidoTabla === "") {
-        contenidoTabla = `
+        cantidadVisible++;
+
+        html += `
             <tr>
-                <td colspan="7">
-                    No se encontraron torneos.
+                <td>
+                    <div class="tournament-name">
+                        ${escaparHTML(torneo.nombre)}
+                    </div>
+                </td>
+                <td>
+                    <span class="category-badge">
+                        ${escaparHTML(torneo.categoria)}
+                    </span>
+                </td>
+                <td>${torneo.participantes}</td>
+                <td class="money">
+                    $${formatearDinero(torneo.valorInscripcion)}
+                </td>
+                <td class="email-cell">
+                    ${escaparHTML(torneo.email)}
+                </td>
+                <td class="money">
+                    $${formatearDinero(torneo.recaudacion)}
+                </td>
+                <td>
+                    <div class="action-group">
+                        <button type="button"
+                            class="btn btn-action btn-edit"
+                            data-accion="editar"
+                            data-indice="${indice}"
+                            aria-label="Editar ${escaparHTML(torneo.nombre)}">
+                            Editar
+                        </button>
+                        <button type="button"
+                            class="btn btn-action btn-delete"
+                            data-accion="eliminar"
+                            data-indice="${indice}"
+                            aria-label="Eliminar ${escaparHTML(torneo.nombre)}">
+                            Eliminar
+                        </button>
+                    </div>
                 </td>
             </tr>
         `;
+    });
+
+    cuerpoTabla.innerHTML = html;
+
+    estadoVacio.hidden = cantidadVisible > 0;
+
+    if (cantidadVisible === 0 && busqueda !== "") {
+        estadoVacio.querySelector("h3").textContent =
+            "No se encontraron resultados";
+
+        estadoVacio.querySelector("p").textContent =
+            "Prueba con otro nombre o categoría.";
+    } else {
+        estadoVacio.querySelector("h3").textContent =
+            "Aún no hay torneos";
+
+        estadoVacio.querySelector("p").textContent =
+            "Registra tu primera competición para comenzar.";
     }
 
-    cuerpoTabla.innerHTML = contenidoTabla;
+    document.getElementById("contadorRegistros").textContent =
+        `${cantidadVisible} ${cantidadVisible === 1 ? "TORNEO" : "TORNEOS"}`;
 
-    // Volver a generar las tarjetas.
-    generarTarjetas();
+    document.getElementById("resumenTabla").textContent =
+        `Mostrando ${cantidadVisible} de ${torneos.length} registros`;
 }
 
-
-/* =========================================================
-   ACTIVIDAD 2: EDITAR UN TORNEO
-   ========================================================= */
+// ---------------------------------------------------------
+// 7. EDITAR TORNEO
+// ---------------------------------------------------------
 
 function editarTorneo(indice) {
-
-    // Comprobar que el índice corresponde a un torneo existente.
-    if (
-        !Number.isInteger(indice) ||
-        indice < 0 ||
-        indice >= torneos.length
-    ) {
-        mostrarMensaje("El torneo seleccionado no existe.");
+    if (indice < 0 || indice >= torneos.length) {
+        notificar("Error", "No se encontró el torneo seleccionado.", "error");
         return;
     }
 
-    // Obtener el objeto seleccionado.
     const torneo = torneos[indice];
 
-    // Cargar los datos en el formulario.
-    obtenerElemento("nombre").value = torneo.nombre;
-    obtenerElemento("categoria").value = torneo.categoria;
-
-    obtenerElemento("participantes").value =
-        torneo.participantes;
-
-    obtenerElemento("valorInscripcion").value =
-        torneo.valorInscripcion;
-
-    obtenerElemento("email").value = torneo.email;
-
-    // Guardar el índice del torneo que se está editando.
     indiceEdicion = indice;
 
-    // Cambiar el texto del botón principal.
-    obtenerElemento("btnRegistrarTorneo").textContent =
-        "ACTUALIZAR TORNEO";
+    campoNombre.value = torneo.nombre;
+    campoCategoria.value = torneo.categoria;
+    campoParticipantes.value = torneo.participantes;
+    campoValor.value = torneo.valorInscripcion;
+    campoEmail.value = torneo.email;
 
-    // Mostrar el botón para cancelar la edición.
-    obtenerElemento("btnCancelarEdicion").hidden = false;
+    limpiarTodosLosErrores();
 
-    mostrarMensaje(
-        "Editando torneo. Modifica los datos y pulsa ACTUALIZAR TORNEO.",
-        "info"
-    );
+    document.getElementById("tituloFormulario").textContent =
+        "Editar torneo";
 
-    // Llevar al usuario al formulario.
-    obtenerElemento("registro").scrollIntoView({
+    document.getElementById("textoBoton").textContent =
+        "Guardar cambios";
+
+    document.getElementById("btnCancelar").hidden = false;
+
+    formulario.scrollIntoView({
         behavior: "smooth",
         block: "start"
     });
 
-    obtenerElemento("nombre").focus();
+    campoNombre.focus();
+
+    notificar(
+        "Modo de edición",
+        `Editando: ${torneo.nombre}`,
+        "success"
+    );
 }
 
+function cancelarEdicion() {
+    indiceEdicion = -1;
 
-/* =========================================================
-   ACTIVIDAD 3: ELIMINAR UN TORNEO
-   ========================================================= */
+    formulario.reset();
+    limpiarTodosLosErrores();
 
-function eliminarTorneo(indice) {
+    document.getElementById("tituloFormulario").textContent =
+        "Registrar torneo";
 
-    // Comprobar que el índice es válido.
+    document.getElementById("textoBoton").textContent =
+        "＋ Registrar torneo";
+
+    document.getElementById("btnCancelar").hidden = true;
+}
+
+// ---------------------------------------------------------
+// 8. ELIMINAR CON CONFIRMACIÓN
+// ---------------------------------------------------------
+
+function solicitarEliminacion(indice) {
+    indiceEliminacion = indice;
+
+    document.getElementById("mensajeEliminar").textContent =
+        `¿Deseas eliminar "${torneos[indice].nombre}"? Esta acción no se puede deshacer.`;
+
+    dialogoEliminar.showModal();
+}
+
+function confirmarEliminacion() {
     if (
-        !Number.isInteger(indice) ||
-        indice < 0 ||
-        indice >= torneos.length
+        indiceEliminacion < 0 ||
+        indiceEliminacion >= torneos.length
     ) {
-        mostrarMensaje("El torneo seleccionado no existe.");
+        dialogoEliminar.close();
+        indiceEliminacion = -1;
         return;
     }
 
-    const torneo = torneos[indice];
+    const indice = indiceEliminacion;
+    const eliminado = torneos[indice];
 
-    // Solicitar confirmación antes de borrar.
-    const confirmar = confirm(
-        `¿Seguro que deseas eliminar el torneo "${torneo.nombre}"?`
-    );
-
-    // Si cancela, no se modifica el arreglo.
-    if (!confirmar) {
-        return;
-    }
-
-    // Si se estaba editando este torneo, cancelar la edición.
+    // Evita borrar accidentalmente un torneo que se está editando.
     if (indiceEdicion === indice) {
-        limpiarFormulario();
+        cancelarEdicion();
     } else if (indiceEdicion > indice) {
-        // Los índices posteriores disminuyen una posición
-        // después de eliminar un elemento anterior.
         indiceEdicion--;
     }
 
-    // Eliminar exactamente un objeto en la posición seleccionada.
     torneos.splice(indice, 1);
 
-    // Actualizar las vistas y estadísticas.
-    mostrarTorneos();
+    if (!guardarEnAlmacenamiento()) {
+        torneos.splice(indice, 0, eliminado);
+        actualizarEstadisticas();
+        mostrarTorneos(buscarTorneo.value);
+        dialogoEliminar.close();
+        indiceEliminacion = -1;
+        return;
+    }
+
+    dialogoEliminar.close();
+    indiceEliminacion = -1;
+
+    mostrarTorneos(buscarTorneo.value);
     actualizarEstadisticas();
 
-    mostrarMensaje(
-        "El torneo se eliminó correctamente.",
-        "exito"
+    notificar(
+        "Torneo eliminado",
+        `"${eliminado.nombre}" se eliminó correctamente.`,
+        "success"
     );
 }
 
-
-/* =========================================================
-   ACTIVIDAD 4: GENERAR TARJETAS DINÁMICAS
-   Esta función no recibe parámetros.
-   ========================================================= */
-
-function generarTarjetas() {
-
-    const contenedor = obtenerElemento("contenedorTarjetas");
-
-    const textoBusqueda =
-        obtenerElemento("buscarTorneo").value.trim().toLowerCase();
-
-    let contenidoTarjetas = "";
-
-    // Recorrer el arreglo original.
-    for (let i = 0; i < torneos.length; i++) {
-
-        const torneo = torneos[i];
-
-        const coincideNombre =
-            torneo.nombre.toLowerCase().includes(textoBusqueda);
-
-        const coincideCategoria =
-            torneo.categoria.toLowerCase().includes(textoBusqueda);
-
-        // Aplicar el filtro de búsqueda también a las tarjetas.
-        if (coincideNombre || coincideCategoria) {
-
-            contenidoTarjetas += `
-                <article class="tarjeta">
-
-                    <h3>${escaparHTML(torneo.nombre)}</h3>
-
-                    <p>
-                        <strong>Categoría:</strong>
-                        ${escaparHTML(torneo.categoria)}
-                    </p>
-
-                    <p>
-                        <strong>Participantes:</strong>
-                        ${torneo.participantes}
-                    </p>
-
-                    <p>
-                        <strong>Inscripción:</strong>
-                        $${formatoMoneda(torneo.valorInscripcion)}
-                    </p>
-
-                    <p>
-                        <strong>Recaudación:</strong>
-                        $${formatoMoneda(torneo.recaudacion)}
-                    </p>
-
-                    <div class="acciones-tarjeta">
-
-                        <button
-                            type="button"
-                            onclick="editarTorneo(${i})"
-                        >
-                            EDITAR
-                        </button>
-
-                        <button
-                            type="button"
-                            onclick="eliminarTorneo(${i})"
-                        >
-                            ELIMINAR
-                        </button>
-
-                    </div>
-
-                </article>
-            `;
-        }
-    }
-
-    if (contenidoTarjetas === "") {
-        contenidoTarjetas = `
-            <p class="sin-resultados">
-                No hay torneos que mostrar.
-            </p>
-        `;
-    }
-
-    // Insertar todas las tarjetas en el contenedor.
-    contenedor.innerHTML = contenidoTarjetas;
-}
-
-
-/* =========================================================
-   ACTIVIDAD 5: BUSCAR TORNEOS
-   ========================================================= */
-
-function buscarTorneos() {
-
-    // La tabla y las tarjetas vuelven a dibujarse
-    // con el contenido actual de la caja de búsqueda.
-    mostrarTorneos();
-}
-
-
-/* =========================================================
-   ACTIVIDAD 6: ACTUALIZAR ESTADÍSTICAS
-   ========================================================= */
+// ---------------------------------------------------------
+// 9. ESTADÍSTICAS DEL DASHBOARD
+// ---------------------------------------------------------
 
 function actualizarEstadisticas() {
+    const totalTorneos = torneos.length;
 
-    let totalParticipantes = 0;
-    let recaudacionTotal = 0;
+    const totalParticipantes = torneos.reduce(
+        (suma, torneo) => suma + torneo.participantes,
+        0
+    );
 
-    // Recorrer todos los torneos, no solo los filtrados.
-    for (let i = 0; i < torneos.length; i++) {
+    const recaudacionTotal = torneos.reduce(
+        (suma, torneo) => suma + torneo.recaudacion,
+        0
+    );
 
-        totalParticipantes += torneos[i].participantes;
+    // Promedio por participante, no por torneo.
+    const promedioInscripcion = totalParticipantes > 0
+        ? recaudacionTotal / totalParticipantes
+        : 0;
 
-        recaudacionTotal += torneos[i].recaudacion;
-    }
+    document.getElementById("totalTorneos").textContent =
+        totalTorneos;
 
-    // Actualizar los indicadores.
-    obtenerElemento("totalTorneos").textContent =
-        torneos.length;
-
-    obtenerElemento("totalParticipantes").textContent =
+    document.getElementById("totalParticipantes").textContent =
         totalParticipantes;
 
-    obtenerElemento("recaudacionTotal").textContent =
-        formatoMoneda(recaudacionTotal);
+    document.getElementById("recaudacionTotal").textContent =
+        formatearDinero(recaudacionTotal);
+
+    document.getElementById("promedioInscripcion").textContent =
+        formatearDinero(promedioInscripcion);
 }
 
+// ---------------------------------------------------------
+// 10. NOTIFICACIONES VISUALES
+// ---------------------------------------------------------
 
-/* =========================================================
-   LIMPIAR Y RESTABLECER EL FORMULARIO
-   ========================================================= */
+function notificar(titulo, mensaje, tipo = "success") {
+    const contenedor = document.getElementById("notificaciones");
+    const aviso = document.createElement("div");
 
-function limpiarFormulario() {
+    aviso.className = `toast ${tipo}`;
+    aviso.setAttribute("role", "status");
 
-    obtenerElemento("nombre").value = "";
-    obtenerElemento("categoria").value = "";
-    obtenerElemento("participantes").value = "";
-    obtenerElemento("valorInscripcion").value = "";
-    obtenerElemento("email").value = "";
+    const simbolo = tipo === "error" ? "!" : "✓";
 
-    // Finalizar el modo de edición.
-    indiceEdicion = -1;
+    const icono = document.createElement("span");
+    icono.className = "toast-mark";
+    icono.textContent = simbolo;
 
-    // Recuperar el texto original del botón.
-    obtenerElemento("btnRegistrarTorneo").textContent =
-        "REGISTRAR TORNEO";
+    const contenido = document.createElement("div");
+    const encabezado = document.createElement("strong");
+    const descripcion = document.createElement("p");
 
-    // Ocultar el botón de cancelar edición.
-    obtenerElemento("btnCancelarEdicion").hidden = true;
+    encabezado.textContent = titulo;
+    descripcion.textContent = mensaje;
+
+    contenido.append(encabezado, descripcion);
+    aviso.append(icono, contenido);
+    contenedor.appendChild(aviso);
+
+    // Elimina la notificación después de 4 segundos.
+    setTimeout(function () {
+        aviso.remove();
+    }, 4000);
 }
-
-
-/* =========================================================
-   INICIALIZAR LOS EVENTOS
-   ========================================================= */
-
-// Controlar el envío del formulario sin recargar la página.
-obtenerElemento("formularioTorneo").addEventListener(
-    "submit",
-    function (evento) {
-
-        evento.preventDefault();
-
-        registrarTorneo();
-    }
-);
-
-// Buscar mientras el usuario escribe.
-obtenerElemento("buscarTorneo").addEventListener(
-    "input",
-    buscarTorneos
-);
-
-// Cancelar una edición sin modificar el torneo guardado.
-obtenerElemento("btnCancelarEdicion").addEventListener(
-    "click",
-    function () {
-
-        limpiarFormulario();
-
-        mostrarMensaje(
-            "Edición cancelada. El torneo no fue modificado.",
-            "info"
-        );
-    }
-);
-
-// Mostrar el estado inicial.
-mostrarTorneos();
-actualizarEstadisticas();
